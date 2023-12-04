@@ -35,13 +35,13 @@ const parseInput = (input: string[]): Game[] => {
   });
 };
 
-interface ValidationInput {
+interface ColorCount {
   red: number;
   green: number;
   blue: number;
 }
 
-const validateGame = (numCubes: ValidationInput, game: Game): boolean => {
+const validateGame = (numCubes: ColorCount, game: Game): boolean => {
   const maxCubes = numCubes.red + numCubes.green + numCubes.blue;
   const validations = game.turns.map(turn => {
     const totalCubes = turn.reduce((prev, curr) => {
@@ -55,25 +55,31 @@ const validateGame = (numCubes: ValidationInput, game: Game): boolean => {
   return validations.every(x => x);
 }
 
-const getPossibleGames = (numCubes: ValidationInput, games: Game[]): number => {
+const getPossibleGames = (numCubes: ColorCount, games: Game[]): number => {
   return games.reduce((prev, curr) => {
     if (validateGame(numCubes, curr)) return prev + curr.id;
     else return prev;
   }, 0);
 }
 
-const testInput = [
-  'Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green',
-  'Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue',
-  'Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red',
-  'Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red',
-  'Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green'
-];
+const getMinCubesForGame = (game: Game): number => {
+  const flatCubes = game.turns.flat();
+  const red = flatCubes.filter(cube => cube.color == 'red').map(cube => cube.quantity);
+  const green = flatCubes.filter(cube => cube.color == 'green').map(cube => cube.quantity);
+  const blue = flatCubes.filter(cube => cube.color == 'blue').map(cube => cube.quantity);
+  return Math.max(...red) * Math.max(...green) * Math.max(...blue);
+}
+
+const getMinCubeSum = (games: Game[]): number => {
+  return games.map(game => getMinCubesForGame(game)).reduce((prev, curr) => prev + curr, 0);
+}
 
 export const day2 = () => {
   console.log('day 2');
-  const validationInput: ValidationInput = {red: 12, green: 13, blue: 14};
-  console.log(`part 1 sum: ${getPossibleGames(validationInput, parseInput(input))}`);
+  const games = parseInput(input);
+  const colorCount: ColorCount = {red: 12, green: 13, blue: 14};
+  console.log(`part 1 sum: ${getPossibleGames(colorCount, games)}`);
+  console.log(`part 2 sum: ${getMinCubeSum(games)}`);
 }
 
 day2();
